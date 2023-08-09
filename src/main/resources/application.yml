@@ -1,0 +1,63 @@
+info:
+  version: '${project.version}'
+  stage: dev
+
+server:
+  port: '${server.port}'
+
+management:
+  server:
+    port: '${management.port}'
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: '${project.name}'
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+spring:
+  application:
+    name: '${project.name}'
+  output:
+    ansi:
+      enabled: always
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        default_schema: dw
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/daway
+    username: postgres
+    password: postgres
+
+hibernate:
+  physical_naming_strategy: dev.vality.exporter.limits.entity.naming.SnakeCaseNamingStrategy
+
+exporter-limits:
+  cron: '*/30 * * * * *' #every 30 seconds
+
+interval:
+  time: 60 #seconds
+
+opensearch:
+  username: changeit
+  password: changeit
+  hostname: changeit
+  port: 9200
+  certificate: changeit
