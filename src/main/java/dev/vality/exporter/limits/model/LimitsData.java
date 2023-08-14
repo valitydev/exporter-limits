@@ -1,4 +1,4 @@
-package dev.vality.exporter.limits.opensearch;
+package dev.vality.exporter.limits.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

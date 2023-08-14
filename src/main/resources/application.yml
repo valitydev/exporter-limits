@@ -61,3 +61,4 @@ opensearch:
   hostname: changeit
   port: 9200
   certificate: changeit
+  index: changeit

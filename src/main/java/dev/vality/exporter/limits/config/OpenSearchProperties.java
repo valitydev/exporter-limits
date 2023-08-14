@@ -15,5 +15,6 @@ public class OpenSearchProperties {
     private String hostname;
     private Integer port;
     private Resource certificate;
+    private String index;
 
 }

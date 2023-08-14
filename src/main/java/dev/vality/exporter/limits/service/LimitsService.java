@@ -1,6 +1,5 @@
 package dev.vality.exporter.limits.service;
 
-import dev.vality.exporter.limits.opensearch.OpenSearchCustomClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,10 +9,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class LimitsService {
 
-    private final OpenSearchCustomClient openSearchCustomClient;
+    private final OpenSearchService openSearchService;
 
     public void registerMetrics() {
-        var limitsData = openSearchCustomClient.getLimitsData();
+        var limitsData = openSearchService.getLimitsDataByInterval();
         log.info("limitsData {}", limitsData);
     }
 }
