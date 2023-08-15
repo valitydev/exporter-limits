@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Metric {
 
+    LIMITS_BOUNDARY(
+            formatWithPrefix("limits_boundary"),
+            "Limits boundary since last scrape"),
     LIMITS_AMOUNT(
             formatWithPrefix("limits_amount"),
             "Limits amount since last scrape");

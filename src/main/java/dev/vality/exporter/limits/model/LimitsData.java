@@ -37,8 +37,8 @@ public class LimitsData {
     @AllArgsConstructor
     public static class Limit {
 
-        private Integer amount;
-        private Integer boundary;
+        private String amount;
+        private String boundary;
         private Change change;
         @JsonProperty("config_id")
         private String configId;
@@ -55,7 +55,7 @@ public class LimitsData {
     @AllArgsConstructor
     public static class Change {
 
-        private Integer amount;
+        private String amount;
         private String currency;
 
     }
@@ -66,9 +66,9 @@ public class LimitsData {
     public static class Route {
 
         @JsonProperty("provider_id")
-        private Integer providerId;
+        private String providerId;
         @JsonProperty("terminal_id")
-        private Integer terminalId;
+        private String terminalId;
 
     }
 }

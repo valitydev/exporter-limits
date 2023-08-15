@@ -39,11 +39,12 @@ public class OpenSearchService {
     @SneakyThrows
     public List<LimitsData> getLimitsDataByInterval() {
         return openSearchClient.search(s -> s
+                                .size(10000)
                                 .index(openSearchProperties.getIndex())
                                 .sort(builder -> builder
                                         .field(builder1 -> builder1
                                                 .field(TIMESTAMP)
-                                                .order(SortOrder.Desc)
+                                                .order(SortOrder.Asc)
                                                 .unmappedType(FieldType.Boolean)))
                                 .docvalueFields(builder -> builder
                                         .field(TIMESTAMP)
