@@ -1,5 +1,6 @@
 package dev.vality.exporter.limits.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LimitsData {
 
     private Payment payment;
@@ -17,6 +19,7 @@ public class LimitsData {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Payment {
 
         private String id;
@@ -26,6 +29,7 @@ public class LimitsData {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Machine {
 
         private String id;
@@ -35,6 +39,7 @@ public class LimitsData {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Limit {
 
         private String amount;
@@ -53,6 +58,7 @@ public class LimitsData {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Change {
 
         private String amount;
@@ -63,6 +69,7 @@ public class LimitsData {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Route {
 
         @JsonProperty("provider_id")
