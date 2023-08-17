@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 public enum Metric {
 
     LIMITS_BOUNDARY(
-            formatWithPrefix("limits_boundary"),
+            formatWithPrefix("limits_boundary_by_calendar"),
             "Limits boundary since last scrape"),
     LIMITS_AMOUNT(
-            formatWithPrefix("limits_amount"),
+            formatWithPrefix("limits_amount_by_calendar"),
             "Limits amount since last scrape");
 
     @Getter
