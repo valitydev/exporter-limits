@@ -25,7 +25,13 @@ public class LimitsService {
     public void registerMetrics() {
         var limitsDataByInterval = openSearchService.getLimitsDataByInterval();
         for (var limitsData : limitsDataByInterval) {
-            var id = limitsData.getMachine().getId() + "." + limitsData.getPayment().getId();
+            var id = String.format(
+                    "%s.%s.%s.%s.%s",
+                    limitsData.getLimit().getConfigId(),
+                    limitsData.getLimit().getRoute().getProviderId(),
+                    limitsData.getLimit().getRoute().getTerminalId(),
+                    limitsData.getLimit().getShopId(),
+                    limitsData.getLimit().getChange().getCurrency());
             gauge(limitsBoundaryAggregatesMap, Metric.LIMITS_BOUNDARY, id, getTags(limitsData), limitsData.getLimit().getBoundary());
             gauge(limitsAmountAggregatesMap, Metric.LIMITS_AMOUNT, id, getTags(limitsData), limitsData.getLimit().getAmount());
         }
@@ -49,6 +55,7 @@ public class LimitsService {
                 CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
                 CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
                 CustomTag.currency(dto.getLimit().getChange().getCurrency()),
-                CustomTag.shopId(dto.getLimit().getShopId()));
+                CustomTag.shopId(dto.getLimit().getShopId()),
+                CustomTag.configId(dto.getLimit().getConfigId()));
     }
 }

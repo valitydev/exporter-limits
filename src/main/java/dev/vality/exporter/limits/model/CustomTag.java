@@ -19,6 +19,7 @@ public class CustomTag {
     public static final String STATUS_TAG = "status";
     public static final String WALLET_ID_TAG = "wallet_id";
     public static final String WALLET_NAME_TAG = "wallet_name";
+    public static final String CONFIG_ID_TAG = "config_id";
 
     public static Tag providerId(String providerId) {
         return Tag.of(PROVIDER_ID_TAG, providerId);
@@ -70,5 +71,9 @@ public class CustomTag {
 
     public static Tag walletName(String walletName) {
         return Tag.of(WALLET_NAME_TAG, walletName);
+    }
+
+    public static Tag configId(String configId) {
+        return Tag.of(CONFIG_ID_TAG, configId);
     }
 }
