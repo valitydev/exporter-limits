@@ -1,14 +1,14 @@
 package dev.vality.exporter.limits.entity;
 
+import dev.vality.exporter.limits.entity.naming.PostgresEnumType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
@@ -17,13 +17,16 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "limit_config")
+@TypeDef(name = "pgsql_enum", typeClass = PostgresEnumType.class)
 public class LimitConfigEntity implements Serializable {
 
     @EmbeddedId
     private LimitConfigPk pk;
 
     @Column(name = "time_range_type")
-    private String timeRangType;
+    @Enumerated(EnumType.STRING)
+    @Type(type = "pgsql_enum")
+    private TimeRangeType timeRangType;
 
     @Column(name = "time_range_type_calendar")
     private String timeRangeTypeCalendar;
@@ -42,5 +45,8 @@ public class LimitConfigEntity implements Serializable {
 
     @Column(name = "limit_scope_types_json")
     private String limitScopeTypesJson;
+
+    @Column(name = "current")
+    private Boolean current;
 
 }

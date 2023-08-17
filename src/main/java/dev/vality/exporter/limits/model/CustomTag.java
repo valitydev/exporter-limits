@@ -108,7 +108,6 @@ public class CustomTag {
         return Tag.of(OPERATION_LIMIT_BEHAVIOUR, operationLimitBehaviour);
     }
 
-
     public static Tag limitScopeTypes(String limitScopeTypes) {
         return Tag.of(LIMIT_SCOPE_TYPES, limitScopeTypes);
     }

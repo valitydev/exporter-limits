@@ -1,17 +1,23 @@
 package dev.vality.exporter.limits.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.exporter.limits.entity.LimitConfigEntity;
+import dev.vality.exporter.limits.entity.TimeRangeType;
 import dev.vality.exporter.limits.model.CustomTag;
 import dev.vality.exporter.limits.model.LimitsData;
 import dev.vality.exporter.limits.model.Metric;
 import dev.vality.exporter.limits.repository.LimitConfigRepository;
 import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -21,13 +27,12 @@ import java.util.stream.Collectors;
 @SuppressWarnings("LineLength")
 public class LimitsService {
 
-    private static final String CALENDAR = "calendar";
-
     private final MeterRegistryService meterRegistryService;
     private final Map<String, Double> limitsBoundaryAggregatesMap;
     private final Map<String, Double> limitsAmountAggregatesMap;
     private final OpenSearchService openSearchService;
     private final LimitConfigRepository limitConfigRepository;
+    private final ObjectMapper objectMapper;
 
     public void registerMetrics() {
         var limitsDataByInterval = openSearchService.getLimitsDataByInterval();
@@ -37,7 +42,7 @@ public class LimitsService {
                 .distinct()
                 .toList();
         log.info("limitConfigIds {}", limitConfigIds);
-        var limitConfigEntities = limitConfigRepository.findAllUsingLimitConfigIdsAndTimeRangType(limitConfigIds, CALENDAR);
+        var limitConfigEntities = limitConfigRepository.findAllUsingLimitConfigIdsAndTimeRangType(limitConfigIds, TimeRangeType.calendar);
         log.info("limitConfigEntities {}", limitConfigEntities);
         var limitConfigsById = limitConfigEntities.stream().collect(
                 Collectors.groupingBy(
@@ -67,7 +72,7 @@ public class LimitsService {
             gauge(limitsAmountAggregatesMap, Metric.LIMITS_AMOUNT, id, getTags(limitsData, limitConfigEntity), limitsData.getLimit().getAmount());
         }
         var registeredMetricsSize = meterRegistryService.getRegisteredMetricsSize(Metric.LIMITS_BOUNDARY.getName()) + meterRegistryService.getRegisteredMetricsSize(Metric.LIMITS_AMOUNT.getName());
-        log.info("Limits with final statuses metrics have been registered to 'prometheus', " +
+        log.info("Limits metrics have been registered to 'prometheus', " +
                 "registeredMetricsSize = {}, clientSize = {}", registeredMetricsSize, limitsDataByInterval.size());
     }
 
@@ -83,16 +88,27 @@ public class LimitsService {
 
     private Tags getTags(LimitsData dto, LimitConfigEntity limitConfigEntity) {
         return Tags.of(
-                CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
-                CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
-                CustomTag.currency(dto.getLimit().getChange().getCurrency()),
-                CustomTag.shopId(dto.getLimit().getShopId()),
-                CustomTag.configId(dto.getLimit().getConfigId()),
-                CustomTag.timeRangType(limitConfigEntity.getTimeRangType()),
-                CustomTag.timeRangeTypeCalendar(limitConfigEntity.getTimeRangeTypeCalendar()),
-                CustomTag.limitContextType(limitConfigEntity.getLimitContextType()),
-                CustomTag.limitTypeTurnoverMetric(limitConfigEntity.getLimitTypeTurnoverMetric()),
-                CustomTag.limitScope(limitConfigEntity.getLimitScope()),
-                CustomTag.operationLimitBehaviour(limitConfigEntity.getOperationLimitBehaviour()));
+                        CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
+                        CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
+                        CustomTag.currency(dto.getLimit().getChange().getCurrency()),
+                        CustomTag.shopId(dto.getLimit().getShopId()),
+                        CustomTag.configId(dto.getLimit().getConfigId()),
+                        CustomTag.timeRangType(limitConfigEntity.getTimeRangType().name()),
+                        CustomTag.timeRangeTypeCalendar(limitConfigEntity.getTimeRangeTypeCalendar()),
+                        CustomTag.limitContextType(limitConfigEntity.getLimitContextType()),
+                        CustomTag.limitTypeTurnoverMetric(limitConfigEntity.getLimitTypeTurnoverMetric()),
+                        CustomTag.limitScope(limitConfigEntity.getLimitScope()),
+                        CustomTag.operationLimitBehaviour(limitConfigEntity.getOperationLimitBehaviour()))
+                .and(getLimitScopeTypeTags(limitConfigEntity.getLimitScopeTypesJson()));
+    }
+
+    @SneakyThrows
+    private List<Tag> getLimitScopeTypeTags(String limitScopeTypesJson) {
+        return objectMapper.readValue(limitScopeTypesJson, new TypeReference<List<Map<String, Object>>>() {
+                })
+                .stream()
+                .flatMap(stringObjectMap -> stringObjectMap.keySet().stream())
+                .map(s -> Tag.of(String.format("limit_scope_type_%s", s), "true"))
+                .collect(Collectors.toList());
     }
 }
