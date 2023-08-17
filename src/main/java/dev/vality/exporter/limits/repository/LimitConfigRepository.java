@@ -16,7 +16,7 @@ public interface LimitConfigRepository extends JpaRepository<LimitConfigEntity, 
     @Query(value = "select lc " +
             "from LimitConfigEntity as lc " +
             "where lc.limit_config_id in :limitConfigIds " +
-            "and lc.time_range_type = :time_range_type" +
+            "and lc.time_range_type = :time_range_type " +
             "and lc.current = true")
     List<LimitConfigEntity> findAllUsingLimitConfigIdsAndTimeRangType(@Param("limitConfigIds") List<String> limitConfigIds, @Param("time_range_type") String timeRangType);
 
