@@ -58,6 +58,7 @@ public class LimitsService {
         for (var limitsData : limitsDataByInterval) {
             var limitConfigEntity = limitConfigsById.get(limitsData.getLimit().getConfigId());
             if (limitConfigEntity == null) {
+                log.info("limitConfigEntity null, limitsData {}", limitsData);
                 break;
             }
             var id = String.format(
@@ -87,19 +88,28 @@ public class LimitsService {
     }
 
     private Tags getTags(LimitsData dto, LimitConfigEntity limitConfigEntity) {
-        return Tags.of(
+        var tags = Tags.of(
                         CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
                         CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
                         CustomTag.currency(dto.getLimit().getChange().getCurrency()),
                         CustomTag.shopId(dto.getLimit().getShopId()),
                         CustomTag.configId(dto.getLimit().getConfigId()),
                         CustomTag.timeRangType(limitConfigEntity.getTimeRangType().name()),
-                        CustomTag.timeRangeTypeCalendar(limitConfigEntity.getTimeRangeTypeCalendar()),
-                        CustomTag.limitContextType(limitConfigEntity.getLimitContextType()),
-                        CustomTag.limitTypeTurnoverMetric(limitConfigEntity.getLimitTypeTurnoverMetric()),
-                        CustomTag.limitScope(limitConfigEntity.getLimitScope()),
-                        CustomTag.operationLimitBehaviour(limitConfigEntity.getOperationLimitBehaviour()))
+                        CustomTag.limitContextType(limitConfigEntity.getLimitContextType()))
                 .and(getLimitScopeTypeTags(limitConfigEntity.getLimitScopeTypesJson()));
+        if (limitConfigEntity.getTimeRangeTypeCalendar() != null) {
+            tags = tags.and(CustomTag.timeRangeTypeCalendar(limitConfigEntity.getTimeRangeTypeCalendar()));
+        }
+        if (limitConfigEntity.getLimitTypeTurnoverMetric() != null) {
+            tags = tags.and(CustomTag.limitTypeTurnoverMetric(limitConfigEntity.getLimitTypeTurnoverMetric()));
+        }
+        if (limitConfigEntity.getLimitScope() != null) {
+            tags = tags.and(CustomTag.limitScope(limitConfigEntity.getLimitScope()));
+        }
+        if (limitConfigEntity.getOperationLimitBehaviour() != null) {
+            tags = tags.and(CustomTag.operationLimitBehaviour(limitConfigEntity.getOperationLimitBehaviour()));
+        }
+        return tags;
     }
 
     @SneakyThrows
