@@ -36,14 +36,11 @@ public class LimitsService {
 
     public void registerMetrics() {
         var limitsDataByInterval = openSearchService.getLimitsDataByInterval();
-        log.info("limitsDataByInterval {}", limitsDataByInterval);
         var limitConfigIds = limitsDataByInterval.stream()
                 .map(limitsData -> limitsData.getLimit().getConfigId())
                 .distinct()
                 .toList();
-        log.info("limitConfigIds {}", limitConfigIds);
         var limitConfigEntities = limitConfigRepository.findAllUsingLimitConfigIdsAndTimeRangType(limitConfigIds, TimeRangeType.calendar);
-        log.info("limitConfigEntities {}", limitConfigEntities);
         var limitConfigsById = limitConfigEntities.stream().collect(
                 Collectors.groupingBy(
                         o -> o.getPk().getLimitConfigId(),
@@ -54,11 +51,10 @@ public class LimitsService {
                                         values -> values.stream()
                                                 .max(Comparator.comparing(limitConfigEntity -> limitConfigEntity.getPk().getSequenceId()))
                                                 .orElse(null)))));
-        log.info("limitConfigsById {}", limitConfigsById);
         for (var limitsData : limitsDataByInterval) {
             var limitConfigEntity = limitConfigsById.get(limitsData.getLimit().getConfigId());
             if (limitConfigEntity == null) {
-                log.info("limitConfigEntity null, limitsData {}", limitsData);
+                log.warn("limitConfigEntity null, no gauge limitsData {}", limitsData);
                 break;
             }
             var id = String.format(
@@ -68,11 +64,10 @@ public class LimitsService {
                     limitsData.getLimit().getRoute().getTerminalId(),
                     limitsData.getLimit().getShopId(),
                     limitsData.getLimit().getChange().getCurrency());
-            log.info("id {}", id);
-            gauge(limitsBoundaryAggregatesMap, Metric.LIMITS_BOUNDARY, id, getTags(limitsData, limitConfigEntity), limitsData.getLimit().getBoundary());
-            gauge(limitsAmountAggregatesMap, Metric.LIMITS_AMOUNT, id, getTags(limitsData, limitConfigEntity), limitsData.getLimit().getAmount());
+            gauge(limitsBoundaryAggregatesMap, Metric.CALENDAR_LIMITS_BOUNDARY, id, getTags(limitsData, limitConfigEntity), limitsData.getLimit().getBoundary());
+            gauge(limitsAmountAggregatesMap, Metric.CALENDAR_LIMITS_AMOUNT, id, getTags(limitsData, limitConfigEntity), limitsData.getLimit().getAmount());
         }
-        var registeredMetricsSize = meterRegistryService.getRegisteredMetricsSize(Metric.LIMITS_BOUNDARY.getName()) + meterRegistryService.getRegisteredMetricsSize(Metric.LIMITS_AMOUNT.getName());
+        var registeredMetricsSize = meterRegistryService.getRegisteredMetricsSize(Metric.CALENDAR_LIMITS_BOUNDARY.getName()) + meterRegistryService.getRegisteredMetricsSize(Metric.CALENDAR_LIMITS_AMOUNT.getName());
         log.info("Limits metrics have been registered to 'prometheus', " +
                 "registeredMetricsSize = {}, clientSize = {}", registeredMetricsSize, limitsDataByInterval.size());
     }

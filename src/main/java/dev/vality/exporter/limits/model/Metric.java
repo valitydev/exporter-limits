@@ -6,12 +6,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Metric {
 
-    LIMITS_BOUNDARY(
+    CALENDAR_LIMITS_BOUNDARY(
             formatWithPrefix("limits_boundary_by_calendar"),
-            "Limits boundary since last scrape"),
-    LIMITS_AMOUNT(
+            "Calendar limits boundary since last scrape"),
+    CALENDAR_LIMITS_AMOUNT(
             formatWithPrefix("limits_amount_by_calendar"),
-            "Limits amount since last scrape");
+            "Calendar limits amount since last scrape");
 
     @Getter
     private final String name;
