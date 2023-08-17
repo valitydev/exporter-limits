@@ -109,11 +109,15 @@ public class LimitsService {
 
     @SneakyThrows
     private List<Tag> getLimitScopeTypeTags(String limitScopeTypesJson) {
-        return objectMapper.readValue(limitScopeTypesJson, new TypeReference<List<Map<String, Object>>>() {
+        var tags = objectMapper.readValue(limitScopeTypesJson, new TypeReference<List<Map<String, Object>>>() {
                 })
                 .stream()
                 .flatMap(stringObjectMap -> stringObjectMap.keySet().stream())
                 .map(s -> Tag.of(String.format("limit_scope_type_%s", s), "true"))
                 .collect(Collectors.toList());
+        if (tags.isEmpty()) {
+            tags.add(Tag.of(String.format("limit_scope_type_%s", "all"), "true"));
+        }
+        return tags;
     }
 }
