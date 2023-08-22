@@ -84,15 +84,14 @@ public class LimitsService {
 
     private Tags getTags(LimitsData dto, LimitConfigEntity limitConfigEntity) {
         var tags = Tags.of(
-                        CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
-                        CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
-                        CustomTag.currency(dto.getLimit().getChange().getCurrency()),
-                        CustomTag.shopId(dto.getLimit().getShopId()),
-                        CustomTag.configId(dto.getLimit().getConfigId()),
-                        CustomTag.timeRangType(limitConfigEntity.getTimeRangType().name()),
-                        CustomTag.limitContextType(limitConfigEntity.getLimitContextType()),
-                        CustomTag.limitScopeTypes(getLimitScopeTypes(limitConfigEntity.getLimitScopeTypesJson())))
-                .and(getLimitScopeTypes(limitConfigEntity.getLimitScopeTypesJson()));
+                CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
+                CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
+                CustomTag.currency(dto.getLimit().getChange().getCurrency()),
+                CustomTag.shopId(dto.getLimit().getShopId()),
+                CustomTag.configId(dto.getLimit().getConfigId()),
+                CustomTag.timeRangType(limitConfigEntity.getTimeRangType().name()),
+                CustomTag.limitContextType(limitConfigEntity.getLimitContextType()),
+                CustomTag.limitScopeTypes(getLimitScopeTypes(limitConfigEntity.getLimitScopeTypesJson())));
         if (limitConfigEntity.getTimeRangeTypeCalendar() != null) {
             tags = tags.and(CustomTag.timeRangeTypeCalendar(limitConfigEntity.getTimeRangeTypeCalendar()));
         }
