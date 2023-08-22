@@ -9,7 +9,6 @@ import dev.vality.exporter.limits.model.LimitsData;
 import dev.vality.exporter.limits.model.Metric;
 import dev.vality.exporter.limits.repository.LimitConfigRepository;
 import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,14 +84,14 @@ public class LimitsService {
 
     private Tags getTags(LimitsData dto, LimitConfigEntity limitConfigEntity) {
         var tags = Tags.of(
-                        CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
-                        CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
-                        CustomTag.currency(dto.getLimit().getChange().getCurrency()),
-                        CustomTag.shopId(dto.getLimit().getShopId()),
-                        CustomTag.configId(dto.getLimit().getConfigId()),
-                        CustomTag.timeRangType(limitConfigEntity.getTimeRangType().name()),
-                        CustomTag.limitContextType(limitConfigEntity.getLimitContextType()))
-                .and(getLimitScopeTypeTags(limitConfigEntity.getLimitScopeTypesJson()));
+                CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
+                CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
+                CustomTag.currency(dto.getLimit().getChange().getCurrency()),
+                CustomTag.shopId(dto.getLimit().getShopId()),
+                CustomTag.configId(dto.getLimit().getConfigId()),
+                CustomTag.timeRangType(limitConfigEntity.getTimeRangType().name()),
+                CustomTag.limitContextType(limitConfigEntity.getLimitContextType()),
+                CustomTag.limitScopeTypes(getLimitScopeTypes(limitConfigEntity.getLimitScopeTypesJson())));
         if (limitConfigEntity.getTimeRangeTypeCalendar() != null) {
             tags = tags.and(CustomTag.timeRangeTypeCalendar(limitConfigEntity.getTimeRangeTypeCalendar()));
         }
@@ -108,16 +108,13 @@ public class LimitsService {
     }
 
     @SneakyThrows
-    private List<Tag> getLimitScopeTypeTags(String limitScopeTypesJson) {
-        var tags = objectMapper.readValue(limitScopeTypesJson, new TypeReference<List<Map<String, Object>>>() {
+    private String getLimitScopeTypes(String limitScopeTypesJson) {
+        return objectMapper.readValue(limitScopeTypesJson, new TypeReference<List<Map<String, Object>>>() {
                 })
                 .stream()
                 .flatMap(stringObjectMap -> stringObjectMap.keySet().stream())
-                .map(s -> Tag.of(String.format("limit_scope_type_%s", s), "true"))
-                .collect(Collectors.toList());
-        if (tags.isEmpty()) {
-            tags.add(Tag.of(String.format("limit_scope_type_%s", "all"), "true"));
-        }
-        return tags;
+                .collect(Collectors.collectingAndThen(
+                        Collectors.joining(","),
+                        s -> Objects.equals(s, "") ? "all" : s));
     }
 }
