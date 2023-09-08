@@ -50,6 +50,8 @@ public class LimitsData {
         @JsonProperty("party_id")
         private String partyId;
         private Route route;
+        @JsonProperty("wallet_id")
+        private String walletId;
         @JsonProperty("shop_id")
         private String shopId;
 

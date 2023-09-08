@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.exporter.limits.entity.LimitConfigEntity;
 import dev.vality.exporter.limits.entity.TimeRangeType;
+import dev.vality.exporter.limits.error.UnknownLimitTypeException;
 import dev.vality.exporter.limits.model.CustomTag;
+import dev.vality.exporter.limits.model.LimitType;
 import dev.vality.exporter.limits.model.LimitsData;
 import dev.vality.exporter.limits.model.Metric;
 import dev.vality.exporter.limits.repository.LimitConfigRepository;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Comparator;
 import java.util.List;
@@ -28,8 +31,10 @@ import java.util.stream.Collectors;
 public class LimitsService {
 
     private final MeterRegistryService meterRegistryService;
-    private final Map<String, Double> limitsBoundaryAggregatesMap;
-    private final Map<String, Double> limitsAmountAggregatesMap;
+    private final Map<String, Double> paymentLimitsBoundaryAggregatesMap;
+    private final Map<String, Double> paymentLimitsAmountAggregatesMap;
+    private final Map<String, Double> payoutLimitsBoundaryAggregatesMap;
+    private final Map<String, Double> payoutLimitsAmountAggregatesMap;
     private final OpenSearchService openSearchService;
     private final LimitConfigRepository limitConfigRepository;
     private final ObjectMapper objectMapper;
@@ -57,17 +62,47 @@ public class LimitsService {
                 log.warn("limitConfigEntity null, no gauge limitsData {}", limitsData);
                 break;
             }
-            var id = String.format(
-                    "%s.%s.%s.%s.%s",
-                    limitsData.getLimit().getConfigId(),
-                    limitsData.getLimit().getRoute().getProviderId(),
-                    limitsData.getLimit().getRoute().getTerminalId(),
-                    limitsData.getLimit().getShopId(),
-                    limitsData.getLimit().getChange().getCurrency());
-            gauge(limitsBoundaryAggregatesMap, Metric.CALENDAR_LIMITS_BOUNDARY, id, getTags(limitsData, limitConfigEntity), limitsData.getLimit().getBoundary());
-            gauge(limitsAmountAggregatesMap, Metric.CALENDAR_LIMITS_AMOUNT, id, getTags(limitsData, limitConfigEntity), limitsData.getLimit().getAmount());
+
+            var limitType = getLimitType(limitsData);
+            switch (limitType) {
+                case PAYMENT -> {
+                    var id = String.format(
+                            "%s.%s.%s.%s.%s",
+                            limitsData.getLimit().getConfigId(),
+                            limitsData.getLimit().getRoute().getProviderId(),
+                            limitsData.getLimit().getRoute().getTerminalId(),
+                            limitsData.getLimit().getShopId(),
+                            limitsData.getLimit().getChange().getCurrency());
+                    gauge(paymentLimitsBoundaryAggregatesMap, Metric.CALENDAR_PAYMENT_LIMITS_BOUNDARY, id,
+                            getPaymentLimitTags(limitsData, limitConfigEntity),
+                            limitsData.getLimit().getBoundary());
+                    gauge(paymentLimitsAmountAggregatesMap, Metric.CALENDAR_PAYMENT_LIMITS_AMOUNT, id,
+                            getPaymentLimitTags(limitsData,
+                            limitConfigEntity), limitsData.getLimit().getAmount());
+                }
+                case PAYOUT -> {
+                    var id = String.format(
+                            "%s.%s.%s.%s.%s",
+                            limitsData.getLimit().getConfigId(),
+                            limitsData.getLimit().getRoute().getProviderId(),
+                            limitsData.getLimit().getRoute().getTerminalId(),
+                            limitsData.getLimit().getWalletId(),
+                            limitsData.getLimit().getChange().getCurrency());
+                    gauge(payoutLimitsBoundaryAggregatesMap, Metric.CALENDAR_PAYOUT_LIMITS_BOUNDARY, id,
+                            getPayoutLimitTags(limitsData, limitConfigEntity),
+                            limitsData.getLimit().getBoundary());
+                    gauge(payoutLimitsAmountAggregatesMap, Metric.CALENDAR_PAYOUT_LIMITS_AMOUNT, id,
+                            getPayoutLimitTags(limitsData,
+                            limitConfigEntity), limitsData.getLimit().getAmount());
+                }
+                default -> throw new UnknownLimitTypeException(String.format("Limit type '%s' is unknown!", limitType));
+            }
         }
-        var registeredMetricsSize = meterRegistryService.getRegisteredMetricsSize(Metric.CALENDAR_LIMITS_BOUNDARY.getName()) + meterRegistryService.getRegisteredMetricsSize(Metric.CALENDAR_LIMITS_AMOUNT.getName());
+        var registeredMetricsSize =
+                meterRegistryService.getRegisteredMetricsSize(Metric.CALENDAR_PAYMENT_LIMITS_BOUNDARY.getName()) +
+                meterRegistryService.getRegisteredMetricsSize(Metric.CALENDAR_PAYMENT_LIMITS_AMOUNT.getName()) +
+                meterRegistryService.getRegisteredMetricsSize(Metric.CALENDAR_PAYOUT_LIMITS_BOUNDARY.getName()) +
+                meterRegistryService.getRegisteredMetricsSize(Metric.CALENDAR_PAYOUT_LIMITS_AMOUNT.getName());
         log.info("Limits metrics have been registered to 'prometheus', " +
                 "registeredMetricsSize = {}, clientSize = {}", registeredMetricsSize, limitsDataByInterval.size());
     }
@@ -82,7 +117,19 @@ public class LimitsService {
         storage.put(id, Double.parseDouble(value));
     }
 
-    private Tags getTags(LimitsData dto, LimitConfigEntity limitConfigEntity) {
+    private LimitType getLimitType(LimitsData limitsData) {
+        if (!ObjectUtils.isEmpty(limitsData.getPayment())) {
+            return LimitType.PAYMENT;
+        }
+
+        if (!ObjectUtils.isEmpty(limitsData.getLimit().getWalletId())) {
+            return LimitType.PAYOUT;
+        }
+
+        throw new UnknownLimitTypeException("Unable to define limit type from this data: " + limitsData);
+    }
+
+    private Tags getPaymentLimitTags(LimitsData dto, LimitConfigEntity limitConfigEntity) {
         var tags = Tags.of(
                 CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
                 CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
@@ -92,6 +139,24 @@ public class LimitsService {
                 CustomTag.timeRangType(limitConfigEntity.getTimeRangType().name()),
                 CustomTag.limitContextType(limitConfigEntity.getLimitContextType()),
                 CustomTag.limitScopeTypes(getLimitScopeTypes(limitConfigEntity.getLimitScopeTypesJson())));
+        return tags.and(getCommonTags(limitConfigEntity));
+    }
+
+    private Tags getPayoutLimitTags(LimitsData dto, LimitConfigEntity limitConfigEntity) {
+        var tags = Tags.of(
+                CustomTag.terminalId(dto.getLimit().getRoute().getTerminalId()),
+                CustomTag.providerId(dto.getLimit().getRoute().getProviderId()),
+                CustomTag.currency(dto.getLimit().getChange().getCurrency()),
+                CustomTag.walletId(dto.getLimit().getWalletId()),
+                CustomTag.configId(dto.getLimit().getConfigId()),
+                CustomTag.timeRangType(limitConfigEntity.getTimeRangType().name()),
+                CustomTag.limitContextType(limitConfigEntity.getLimitContextType()),
+                CustomTag.limitScopeTypes(getLimitScopeTypes(limitConfigEntity.getLimitScopeTypesJson())));
+        return tags.and(getCommonTags(limitConfigEntity));
+    }
+
+    private Tags getCommonTags(LimitConfigEntity limitConfigEntity) {
+        Tags tags = Tags.empty();
         if (limitConfigEntity.getTimeRangeTypeCalendar() != null) {
             tags = tags.and(CustomTag.timeRangeTypeCalendar(limitConfigEntity.getTimeRangeTypeCalendar()));
         }

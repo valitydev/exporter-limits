@@ -6,12 +6,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Metric {
 
-    CALENDAR_LIMITS_BOUNDARY(
-            formatWithPrefix("limits_boundary_by_calendar"),
-            "Calendar limits boundary since last scrape"),
-    CALENDAR_LIMITS_AMOUNT(
-            formatWithPrefix("limits_amount_by_calendar"),
-            "Calendar limits amount since last scrape");
+    CALENDAR_PAYMENT_LIMITS_BOUNDARY(
+            formatWithPrefix("payment_limits_boundary_by_calendar"),
+            "Calendar payment limits boundary since last scrape"),
+    CALENDAR_PAYMENT_LIMITS_AMOUNT(
+            formatWithPrefix("payment_limits_amount_by_calendar"),
+            "Calendar payment limits amount since last scrape"),
+
+    CALENDAR_PAYOUT_LIMITS_BOUNDARY(
+            formatWithPrefix("payout_limits_boundary_by_calendar"),
+            "Calendar payout limits boundary since last scrape"),
+    CALENDAR_PAYOUT_LIMITS_AMOUNT(
+            formatWithPrefix("payout_limits_amount_by_calendar"),
+            "Calendar payout limits amount since last scrape");
 
     @Getter
     private final String name;
