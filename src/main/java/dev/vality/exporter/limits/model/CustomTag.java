@@ -9,6 +9,7 @@ public class CustomTag {
     public static final String PROVIDER_ID_TAG = "provider_id";
     public static final String TERMINAL_ID_TAG = "terminal_id";
     public static final String SHOP_ID_TAG = "shop_id";
+    public static final String WALLET_ID_TAG = "wallet_id";
     public static final String CURRENCY_TAG = "currency";
     public static final String CONFIG_ID_TAG = "config_id";
     public static final String TIME_RANGE_TYPE = "time_range_type";
@@ -29,6 +30,10 @@ public class CustomTag {
 
     public static Tag shopId(String shopId) {
         return Tag.of(SHOP_ID_TAG, shopId);
+    }
+
+    public static Tag walletId(String walletId) {
+        return Tag.of(WALLET_ID_TAG, walletId);
     }
 
     public static Tag currency(String currency) {

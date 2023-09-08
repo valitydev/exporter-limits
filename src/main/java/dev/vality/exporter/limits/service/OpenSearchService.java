@@ -9,7 +9,9 @@ import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.SortOrder;
 import org.opensearch.client.opensearch._types.mapping.FieldType;
+import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.MatchPhraseQuery;
+import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch._types.query_dsl.RangeQuery;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +30,7 @@ public class OpenSearchService {
     private static final String DATE_TIME = "date_time";
     private static final String STRICT_DATE_OPTIONAL_TIME = "strict_date_optional_time";
     private static final String HELLGATE = "hellgate";
+    private static final String FISTFUL = "fistful";
     private static final String LIMITS = "\"Limit change commited\"";
 
     private final OpenSearchProperties openSearchProperties;
@@ -62,9 +65,16 @@ public class OpenSearchService {
                                                                 .format(STRICT_DATE_OPTIONAL_TIME)
                                                                 .build()
                                                                 ._toQuery(),
-                                                        new MatchPhraseQuery.Builder()
-                                                                .field(KUBERNETES_CONTAINER_NAME)
-                                                                .query(HELLGATE)
+                                                        new BoolQuery.Builder()
+                                                                .should(new Query(new MatchPhraseQuery.Builder()
+                                                                                .field(KUBERNETES_CONTAINER_NAME)
+                                                                                .query(HELLGATE)
+                                                                                .build()),
+                                                                        new Query(new MatchPhraseQuery.Builder()
+                                                                                .field(KUBERNETES_CONTAINER_NAME)
+                                                                                .query(FISTFUL)
+                                                                                .build()))
+                                                                .minimumShouldMatch("1")
                                                                 .build()
                                                                 ._toQuery()))),
                         LimitsData.class)

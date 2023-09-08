@@ -10,12 +10,22 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StorageConfig {
 
     @Bean
-    public Map<String, Double> limitsBoundaryAggregatesMap() {
+    public Map<String, Double> paymentlimitsBoundaryAggregatesMap() {
         return new ConcurrentHashMap<>();
     }
 
     @Bean
-    public Map<String, Double> limitsAmountAggregatesMap() {
+    public Map<String, Double> paymentlimitsAmountAggregatesMap() {
+        return new ConcurrentHashMap<>();
+    }
+
+    @Bean
+    public Map<String, Double> payoutlimitsBoundaryAggregatesMap() {
+        return new ConcurrentHashMap<>();
+    }
+
+    @Bean
+    public Map<String, Double> payoutlimitsAmountAggregatesMap() {
         return new ConcurrentHashMap<>();
     }
 }
