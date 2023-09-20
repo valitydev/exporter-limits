@@ -178,6 +178,7 @@ public class LimitsService {
                 })
                 .stream()
                 .flatMap(stringObjectMap -> stringObjectMap.keySet().stream())
+                .sorted()
                 .collect(Collectors.collectingAndThen(
                         Collectors.joining(","),
                         s -> Objects.equals(s, "") ? "all" : s));
