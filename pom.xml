@@ -6,11 +6,11 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>2.1.4</version>
+        <version>2.1.5</version>
     </parent>
 
     <artifactId>exporter-limits</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
     <name>exporter-limits</name>
@@ -76,12 +76,12 @@
         <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-rest-client</artifactId>
-            <version>2.7.0</version>
+            <version>2.7.0</ve2.10.0
         </dependency>
         <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-java</artifactId>
-            <version>2.4.0</version>
+            <version>2.4.0</ve2.6.0
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -131,7 +131,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
