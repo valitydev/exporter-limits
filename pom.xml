@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>exporter-limits</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>exporter-limits</name>
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.3.3</version>
+            <version>42.3.9</version>
         </dependency>
         <dependency>
             <groupId>org.opensearch.client</groupId>
